@@ -514,16 +514,23 @@ class Workbook < BIFFWriter
     end
 
     # Handle utf8 strings
-    ruby_18 do
+    if jruby?
       if name =~ NonAscii
-        name = utf8_to_16be(name)
+        name = Iconv.iconv('UTF-16BE', 'UTF-8', name).to_s
         encoding = 1
       end
-    end
-    ruby_19 do
-      if name.encoding == Encoding::UTF_8
-        name = utf8_to_16be(name)
-        encoding = 1
+    else
+      ruby_18 do
+        if name =~ NonAscii
+          name = utf8_to_16be(name)
+          encoding = 1
+        end
+      end
+      ruby_19 do
+        if name.encoding == Encoding::UTF_8
+          name = utf8_to_16be(name)
+          encoding = 1
+        end
       end
     end
 
@@ -2086,16 +2093,23 @@ class Workbook < BIFFWriter
     ruby_19 { format = convert_to_ascii_if_ascii(format) }
 
     # Handle utf8 strings
-    ruby_18 do
+    if jruby?
       if format =~ NonAscii
-        format = utf8_to_16be(format)
+        format = Iconv.iconv('UTF-16BE', 'UTF-8', format).to_s
         encoding = 1
       end
-    end
-    ruby_19 do
-      if format.encoding == Encoding::UTF_8
-        format = utf8_to_16be(format)
-        encoding = 1
+    else
+      ruby_18 do
+        if format =~ NonAscii
+          format = utf8_to_16be(format)
+          encoding = 1
+        end
+      end
+      ruby_19 do
+        if format.encoding == Encoding::UTF_8
+          format = utf8_to_16be(format)
+          encoding = 1
+        end
       end
     end
 

@@ -1680,16 +1680,23 @@ class Worksheet < BIFFWriter
     limit    = encoding != 0 ? 255 *2 : 255
 
     # Handle utf8 strings
-    ruby_18 do
-      if string =~ NonAscii
-        string = utf8_to_16be(string)
+    if jruby?
+      if name =~ NonAscii
+        name = Iconv.iconv('UTF-16BE', 'UTF-8', name).to_s
         encoding = 1
       end
-    end
-    ruby_19 do
-      if string.encoding == Encoding::UTF_8
-        string = utf8_to_16be(string)
-        encoding = 1
+    else
+      ruby_18 do
+        if name =~ NonAscii
+          name = utf8_to_16be(name)
+          encoding = 1
+        end
+      end
+      ruby_19 do
+        if name.encoding == Encoding::UTF_8
+          name = utf8_to_16be(name)
+          encoding = 1
+        end
       end
     end
 
@@ -2707,6 +2714,13 @@ class Worksheet < BIFFWriter
     ruby_19 {str = convert_to_ascii_if_ascii(str) }
 
     # Handle utf8 strings
+    jruby do
+      if str =~ NonAscii
+        str_utf16le = Iconv.iconv('UTF-16BE', 'UTF-8', str).to_s
+        return write_utf16be_string(row, col, str_utf16le, args[3])
+      end
+    end
+
     ruby_18 do
       if str =~ NonAscii
         str_utf16le = utf8_to_16le(str)
@@ -3872,16 +3886,23 @@ class Worksheet < BIFFWriter
     encoding  = 0              # String encoding.
 
     # Handle utf8 strings.
-    ruby_18 do
+    if jruby?
       if string =~ NonAscii
-        string = utf8_to_16be(string)
+        string = Iconv.iconv('UTF-16BE', 'UTF-8', string).to_s
         encoding = 1
       end
-    end
-    ruby_19 do
-      if string.encoding == Encoding::UTF_8
-        string = utf8_to_16be(string)
-        encoding = 1
+    else
+      ruby_18 do
+        if string =~ NonAscii
+          string = utf8_to_16be(string)
+          encoding = 1
+        end
+      end
+      ruby_19 do
+        if string.encoding == Encoding::UTF_8
+          string = utf8_to_16be(string)
+          encoding = 1
+        end
       end
     end
 
@@ -6605,16 +6626,23 @@ class Worksheet < BIFFWriter
       length   = string.bytesize
 
       # Handle utf8 strings
-      ruby_18 do
+      if jruby?
         if string =~ NonAscii
-          string = utf8_to_16be(string)
-          encodign = 1
+          string = Iconv.iconv('UTF-16BE', 'UTF-8', string).to_s
+          encoding = 1
         end
-      end
-      ruby_19 do
-        if string.encoding == Encoding::UTF_8
-          string = utf8_to_16be(string)
-          encodign = 1
+      else
+        ruby_18 do
+          if string =~ NonAscii
+            string = utf8_to_16be(string)
+            encoding = 1
+          end
+        end
+        ruby_19 do
+          if string.encoding == Encoding::UTF_8
+            string = utf8_to_16be(string)
+            encoding = 1
+          end
         end
       end
 
@@ -7834,17 +7862,24 @@ class Worksheet < BIFFWriter
       string = string.unpack('n*').pack('v*')
     # Handle utf8 strings
     else
-      ruby_18 do
+      if jruby?
         if string =~ NonAscii
-          string = NKF.nkf('-w16L0 -m0 -W', string)
+          string = Iconv.iconv('UTF-16LE', 'UTF-8', string).to_s
           params[:encoding] = 1
         end
-      end
-      ruby_19 do
-        if string.encoding == Encoding::UTF_8
-          string = NKF.nkf('-w16L0 -m0 -W', string)
-          string.force_encoding('UTF-16LE')
-          params[:encoding] = 1
+      else
+        ruby_18 do
+          if string =~ NonAscii
+            string = NKF.nkf('-w16L0 -m0 -W', string)
+            params[:encoding] = 1
+          end
+        end
+        ruby_19 do
+          if string.encoding == Encoding::UTF_8
+            string = NKF.nkf('-w16L0 -m0 -W', string)
+            string.force_encoding('UTF-16LE')
+            params[:encoding] = 1
+          end
         end
       end
     end
@@ -8811,18 +8846,26 @@ class Worksheet < BIFFWriter
     ruby_19 { string = convert_to_ascii_if_ascii(string) }
 
     # Handle utf8 strings
-    ruby_18 do
+    if jruby?
       if string =~ NonAscii
         str_length = string.gsub(/[^\Wa-zA-Z_\d]/, ' ').bytesize   # jlength
-        string = utf8_to_16le(string)
+        string = Iconv.iconv('UTF-16LE', 'UTF-8', format).to_s
         encoding = 1
       end
-    end
-    ruby_19 do
-      if string.encoding == Encoding::UTF_8
-        str_length = string.gsub(/[^\Wa-zA-Z_\d]/, ' ').bytesize   # jlength
-        string = utf8_to_16le(string)
-        encoding = 1
+    else
+      ruby_18 do
+        if string =~ NonAscii
+          str_length = string.gsub(/[^\Wa-zA-Z_\d]/, ' ').bytesize   # jlength
+          string = utf8_to_16le(string)
+          encoding = 1
+        end
+      end
+      ruby_19 do
+        if string.encoding == Encoding::UTF_8
+          str_length = string.gsub(/[^\Wa-zA-Z_\d]/, ' ').bytesize   # jlength
+          string = utf8_to_16le(string)
+          encoding = 1
+        end
       end
     end
 

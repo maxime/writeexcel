@@ -49,6 +49,27 @@ unless File.respond_to?(:binread)
   end
 end
 
+
+if defined?(JRUBY_VERSION)
+  require 'iconv'
+  
+  def jruby
+    yield
+  end
+
+  def jruby?
+    true
+  end
+else
+  def jruby
+    false
+  end
+
+  def jruby?
+    true
+  end
+end
+
 if RUBY_VERSION < "1.9"
 
   def ruby_18 #:nodoc:
